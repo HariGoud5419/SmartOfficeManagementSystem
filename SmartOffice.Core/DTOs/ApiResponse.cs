@@ -2,6 +2,7 @@ namespace SmartOffice.Core.DTOs
 {
     /// <summary>
     /// Generic API response wrapper for sending consistent responses.
+    /// Gives uniform API responses, making frontend parsing predictable.
     /// </summary>
     /// <typeparam name="T">Type of the data returned in the response.</typeparam>
     public class ApiResponse<T>
