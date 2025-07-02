@@ -1,41 +1,52 @@
+
+using Microsoft.EntityFrameworkCore;
+using SmartOffice.Infrastructure.Data;
+using SmartOffice.Infrastructure.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+//----------------------------------------------------------
+// Configure Services (Dependency Injection Container)
+//----------------------------------------------------------
+
+// Add SmartOffice infrastructure services (TenantProvider, TenantService, etc.)
+builder.Services.AddSmartOfficeInfrastructure();
+
+// Register DbContext
+builder.Services.AddDbContext<SmartOfficeDbContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+// Add Controllers (for API endpoints)
+builder.Services.AddControllers();
+// Optional: Enable API Explorer (for Swagger)
+builder.Services.AddEndpointsApiExplorer();
+// Optional: Add Swagger/OpenAPI Generator
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+//----------------------------------------------------------
+// Configure HTTP Request Pipeline (Middleware Pipeline)
+//----------------------------------------------------------
+
+// Enable Swagger UI and JSON endpoint during Development mode
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
+// Optional: Enable HTTPS Redirection (forces API calls over HTTPS)
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Optional: Enable Authorization Middleware (JWT will hook here later)
+app.UseAuthorization();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+//  Map Controller endpoints
+app.MapControllers();
 
+// Run the Web Application
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

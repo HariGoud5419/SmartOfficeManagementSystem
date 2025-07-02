@@ -32,6 +32,6 @@ namespace SmartOffice.Core.Entities
         /// <summary>
         /// Navigation property: Users assigned to this role.
         /// </summary>
-        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+        public ICollection<UserRole> UserRoles { get; set; } = [];
     }
 }
